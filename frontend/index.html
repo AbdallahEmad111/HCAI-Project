@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Research Roadmap Agent — Explainable Research Assistant</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Top Header & Accessibility Toolbar -->
+  <header class="top-bar" role="banner">
+    <div class="brand">
+      <h1>AI Research Roadmap Agent</h1>
+      <span class="badge badge-principle" title="Active HAI Principle">Principle: Explainability</span>
+    </div>
+
+    <nav class="a11y-controls" aria-label="Accessibility and display settings">
+      <button type="button" id="btn-font-size" class="tool-btn" aria-pressed="false">
+        Text Size: 100%
+      </button>
+      <button type="button" id="btn-contrast" class="tool-btn" aria-pressed="false">
+        High Contrast: Off
+      </button>
+      <button type="button" id="btn-plain-lang" class="tool-btn" aria-pressed="false">
+        Plain Language: Off
+      </button>
+      <button type="button" id="btn-toggle-hints" class="tool-btn" aria-pressed="true">
+        Guided Hints: On
+      </button>
+      <button type="button" id="btn-help" class="tool-btn tool-btn-help">
+        Help &amp; Limits
+      </button>
+    </nav>
+  </header>
+
+  <!-- Shneiderman Rule 3: 5-Stage Step Indicator -->
+  <section class="step-bar" aria-label="Research workflow progress">
+    <div class="step-label" id="step-status-text" aria-live="polite">
+      Step 1 of 5: Profile
+    </div>
+    <ol class="step-list" id="step-list">
+      <li class="step-item active" data-step="1">1. Profile</li>
+      <li class="step-item" data-step="2">2. Retrieve</li>
+      <li class="step-item" data-step="3">3. Analyze</li>
+      <li class="step-item" data-step="4">4. Explain</li>
+      <li class="step-item" data-step="5">5. Publish</li>
+    </ol>
+  </section>
+
+  <!-- Shneiderman Rule 8 & 6: Persistent Profile Summary Strip & Reversal Controls -->
+  <section class="profile-strip" aria-label="Active researcher profile">
+    <div class="profile-summary" id="profile-summary-text">
+      <strong>Active Profile:</strong> Dept: <em>Not set</em> | Skills: <em>None</em> | Compute: <em>Low</em> | Interest: <em>General</em>
+    </div>
+    <div class="profile-actions">
+      <button type="button" id="btn-paste-profile" class="chip-btn">Paste Full Profile</button>
+      <button type="button" id="btn-undo" class="chip-btn" disabled>Undo</button>
+      <button type="button" id="btn-start-over" class="chip-btn">Start Over</button>
+    </div>
+  </section>
+
+  <!-- Shortcut Modal/Drawer for Pasting Full Profile (Shneiderman Rule 2) -->
+  <section id="paste-drawer" class="paste-drawer hidden" aria-label="Paste full profile shortcut">
+    <label for="paste-input">
+      <strong>Quick Shortcut:</strong> Paste your profile in one line (Format: <code>Department | Skills | Interests | Compute</code>):
+    </label>
+    <div class="paste-row">
+      <input
+        type="text"
+        id="paste-input"
+        placeholder="e.g. CS | Python, statistics | software engineering | low"
+      />
+      <button type="button" id="btn-apply-paste" class="primary-btn">Apply &amp; Run</button>
+      <button type="button" id="btn-close-paste" class="chip-btn">Cancel</button>
+    </div>
+  </section>
+
+  <!-- Main Workspace: Chat + "Why this?" Explainability Panel -->
+  <main id="main-content" class="workspace">
+    <!-- Left Column: Guided Chat & Profile Controls -->
+    <section class="chat-panel" aria-label="Research assistant conversation">
+      <div
+        id="chat-messages"
+        class="chat-messages"
+        role="log"
+        aria-live="polite"
+        aria-relevant="additions"
+      ></div>
+
+      <!-- Quick-Reply Chips & Onboarding Stage 1/2 Controls -->
+      <div class="quick-replies" id="quick-replies" aria-label="Quick options">
+        <button type="button" class="chip-btn" data-dept="CS">Dept: CS</button>
+        <button type="button" class="chip-btn" data-dept="SC">Dept: SC</button>
+        <button type="button" class="chip-btn" data-dept="AI">Dept: AI</button>
+        <button type="button" class="chip-btn" data-dept="IS">Dept: IS</button>
+        <button type="button" class="chip-btn chip-example" id="btn-worked-example">
+          Try Worked Example
+        </button>
+      </div>
+
+      <!-- Structured Profile & Question Form -->
+      <form id="chat-form" class="chat-form" aria-label="Research profile and message form">
+        <div class="form-grid">
+          <div class="field">
+            <label for="dept-select">Department <span aria-hidden="true">*</span></label>
+            <select id="dept-select" required>
+              <option value="">-- Select --</option>
+              <option value="CS">CS (Computer Science)</option>
+              <option value="SC">SC (Scientific Computing)</option>
+              <option value="AI">AI (Artificial Intelligence)</option>
+              <option value="IS">IS (Information Systems)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="compute-select">Compute Available</label>
+            <select id="compute-select">
+              <option value="low">Low (Standard Laptop / CPU)</option>
+              <option value="medium">Medium (GPU / Workstation)</option>
+              <option value="high">High (Cluster / Cloud GPU)</option>
+            </select>
+          </div>
+
+          <div class="field field-wide">
+            <label for="skills-input">Your Skills (comma-separated)</label>
+            <input
+              type="text"
+              id="skills-input"
+              placeholder="e.g., Python, SQL, linear algebra"
+            />
+          </div>
+        </div>
+
+        <p id="guided-hint-box" class="hint-text">
+          Hint: Select your department and enter 1–3 skills you already know, then ask a question or click "Get Roadmap".
+        </p>
+
+        <div class="message-row">
+          <label for="message-input" class="visually-hidden">Research interest or question</label>
+          <input
+            type="text"
+            id="message-input"
+            placeholder="Describe your research interest or question (e.g., software testing, NLP)..."
+          />
+          <button type="submit" id="btn-send" class="primary-btn">Get Roadmap</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Right Column: Principle Feature ("Why this?" Explainability Panel) -->
+    <aside class="why-panel" aria-labelledby="why-heading">
+      <div class="why-header">
+        <h2 id="why-heading">Why this? (Explainability Panel)</h2>
+        <span class="status-pill" id="evidence-status-badge">Status: Awaiting Profile</span>
+      </div>
+
+      <p class="why-intro">
+        Every recommendation below is ranked by our backend over 12 verified CC-BY papers before the AI phrases the summary.
+      </p>
+
+      <div id="why-content" class="why-content">
+        <div class="empty-state">
+          <p><strong>No directions retrieved yet.</strong></p>
+          <p>Submit your profile or click <em>"Try Worked Example"</em> to inspect the exact matching scores, skill overlaps, compute checks, and paper DOIs.</p>
+        </div>
+      </div>
+
+      <!-- Closure & Feedback Section (Shneiderman Rule 4 + HAI Ladder Level 4) -->
+      <div id="closure-box" class="closure-box hidden">
+        <h3>Roadmap Closure &amp; Feedback</h3>
+        <div class="closure-actions">
+          <button type="button" id="btn-save-roadmap" class="primary-btn">Save Summary (.txt)</button>
+          <button type="button" id="btn-thumb-up" class="chip-btn" aria-label="Helpful recommendation">Helpful (Yes)</button>
+          <button type="button" id="btn-thumb-down" class="chip-btn" aria-label="Not helpful recommendation">Not Helpful (No)</button>
+        </div>
+        <div id="feedback-reason-box" class="feedback-reason hidden">
+          <label for="feedback-text">What didn't fit? (Your feedback improves retrieval):</label>
+          <div class="paste-row">
+            <input type="text" id="feedback-text" placeholder="e.g., too advanced, wrong subfield..." />
+            <button type="button" id="btn-submit-feedback" class="chip-btn">Send Feedback</button>
+          </div>
+        </div>
+        <p id="feedback-confirm" class="feedback-confirm" aria-live="polite"></p>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Help & Scope Modal -->
+  <dialog id="help-dialog" class="help-dialog" aria-labelledby="help-title">
+    <h2 id="help-title">About AI Research Roadmap Agent &amp; Limits</h2>
+    <ul>
+      <li><strong>What I am:</strong> An explainable AI assistant built for CS, SC, AI, and IS researchers.</li>
+      <li><strong>Knowledge base:</strong> 12 verified open-access (CC BY 4.0) papers from 2025–2026 (planned expansion: 32 papers) and 3 verified publication venues.</li>
+      <li><strong>How Explainability works:</strong> Python + SQLite FTS5 computes skill overlap, topic relevance, and hardware feasibility first. Gemini only phrases the summary from those retrieved papers.</li>
+      <li><strong>What I cannot do:</strong> I cannot confirm 100% novelty, guarantee journal acceptance, invent citations, or answer questions outside CS/SC/AI/IS.</li>
+      <li><strong>Keyboard shortcuts:</strong> Use <kbd>Tab</kbd> to navigate controls, <kbd>Enter</kbd> to submit, and the top bar to scale text up to 200%.</li>
+    </ul>
+    <button type="button" id="btn-close-help" class="primary-btn">Close</button>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
